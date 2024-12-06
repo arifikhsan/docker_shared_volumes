@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  container_a:
+    image: alpine:latest
+    container_name: container_a
+    volumes:
+      - ./data/both_container/container_a:/shared/container_a
+      - ./data/both_container/container_b:/shared/container_b
+    command: >
+      sh -c "
+      mkdir -p /shared/container_a &&
+      echo 'Hello from A' > /shared/container_a/message_a.txt &&
+      while [ ! -f /shared/container_b/message_b.txt ]; do sleep 1; done &&
+      echo 'B wrote: ' && cat /shared/container_b/message_b.txt &&
+      sleep 3600
+      "
+
+  container_b:
+    image: alpine:latest
+    container_name: container_b
+    volumes:
+      - ./data/both_container/container_a:/shared/container_a
+      - ./data/both_container/container_b:/shared/container_b
+    command: >
+      sh -c "
+      mkdir -p /shared/container_b &&
+      while [ ! -f /shared/container_a/message_a.txt ]; do sleep 1; done &&
+      echo 'A wrote: ' && cat /shared/container_a/message_a.txt &&
+      echo 'Hello from B' > /shared/container_b/message_b.txt &&
+      sleep 3600
+      "
